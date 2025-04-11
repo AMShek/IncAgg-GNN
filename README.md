@@ -43,7 +43,7 @@ python main.py \
 
 | Parameter   | Description                                             |
 |-------------|---------------------------------------------------------|
-| `model`     | Backbone GNN model (e.g., `pna`, `gcn`, `appnp`, `gcn2`，`graphsage`) |
+| `model`     | Backbone GNN model (e.g., `gcn`, `appnp`, `gcn2`，`graphsage`) |
 | `dataset`   | Dataset name (e.g., `flickr`, `ogbn-arxiv`, `ogbn-products`, `reddit`, `amazon-products`) |
 | `root`      | Directory path to download/cache datasets               |
 | `device`    | GPU index                 |
