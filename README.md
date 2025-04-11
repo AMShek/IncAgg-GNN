@@ -25,7 +25,7 @@ Requirements can be installed and checked by running 'setup.py'.
 
 It is recommended to create a new `conda` environment for this project as it may be tricky to install `PyG`, `torch-sparse`, and `torch-scatter` as it can mess up your current dependencies.
 
-This project is based on GAS repo, https://github.com/rusty1s/pyg_autoscale.
+This code repository was adapted from an open-source library, [PyGAS](https://github.com/rusty1s/pyg_autoscale).
 
 
 ## Reproducing Results
