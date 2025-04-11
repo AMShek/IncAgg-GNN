@@ -1,0 +1,84 @@
+# @package _group_
+name: GraphSAGE
+norm: true
+loop: true
+params:
+
+  reddit:
+    architecture:
+      num_layers: 2
+      hidden_channels: 1024
+      dropout: 0.5
+      drop_input: false
+      batch_norm: false
+      residual: false
+    num_parts: 200
+    batch_size: 100
+    max_steps: 2
+    pool_size: 2
+    num_workers: 0
+    lr: 0.01
+    reg_weight_decay: 0.0
+    nonreg_weight_decay: 0.0
+    grad_norm: none
+    epochs: 400
+
+  arxiv:
+    architecture:
+      num_layers: 3 
+      hidden_channels: 256
+      dropout: 0.5 
+      drop_input: false
+      batch_norm: true
+      residual: false
+    num_parts: 80
+    batch_size: 40 
+    max_steps: -1 # no max_steps limit
+    pool_size: 2
+    num_workers: 0
+    lr: 0.01 
+    reg_weight_decay: 0
+    nonreg_weight_decay: 0 
+    grad_norm: none
+    epochs: 3
+    runs: 1
+
+  products:
+    architecture:
+      num_layers: 3 
+      hidden_channels: 256 
+      dropout: 0.3 
+      drop_input: false
+      batch_norm: false
+      residual: false
+    num_parts: 7 
+    batch_size: 1 
+    max_steps: -1 # no max_steps limit
+    pool_size: 1
+    num_workers: 0
+    lr: 0.005
+    reg_weight_decay: 0
+    nonreg_weight_decay: 0
+    grad_norm: null
+    epochs: 300 
+    runs: 1
+
+  amazonproducts:
+    architecture:
+      num_layers: 3 
+      hidden_channels: 256 
+      dropout: 0.3 
+      drop_input: false
+      batch_norm: false
+      residual: false
+    num_parts: 200
+    batch_size: 100
+    max_steps: -1 # no max_steps limit
+    pool_size: 1
+    num_workers: 0
+    lr: 0.005
+    reg_weight_decay: 0
+    nonreg_weight_decay: 0
+    grad_norm: null
+    epochs: 150 
+    runs: 1

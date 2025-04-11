@@ -1,0 +1,40 @@
+# @package _group_
+name: APPNP
+norm: true
+loop: false
+params:
+
+  arxiv:
+    architecture:
+      num_layers: 5 
+      hidden_channels: 256  
+      alpha: 0.1 
+      dropout: 0.3
+    num_parts: 80  
+    batch_size: 40 
+    max_steps: -1 # no max_steps limit actually
+    pool_size: 2
+    num_workers: 4  
+    lr: 0.01  
+    reg_weight_decay: 0
+    nonreg_weight_decay: 0
+    grad_norm: 1.0 
+    epochs: 2000 
+
+
+  products:
+    architecture:
+      num_layers: 5 
+      hidden_channels: 512 
+      alpha: 0.01  
+      dropout: 0.1 
+    num_parts: 7  
+    batch_size: 1 
+    max_steps: -1  # no max_steps limit actually
+    pool_size: 2
+    num_workers: 4  
+    lr: 0.001
+    reg_weight_decay: 5.0e-05
+    nonreg_weight_decay: 0
+    grad_norm: 1.0 
+    epochs: 3
