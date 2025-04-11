@@ -48,7 +48,7 @@ def get_amazon_products(root: str) -> Tuple[Data, int, int]:
     dataset = AmazonProducts(f'{root}/Amazon', transform=T.ToSparseTensor())
     data = dataset[0]
     data.x = (data.x - data.x.mean(dim=0)) / data.x.std(dim=0)
-    data.y = data.y.argmax(dim=-1)  # 转成 [N] 的整型标签
+    data.y = data.y.argmax(dim=-1)  
     return data, dataset.num_features, dataset.num_classes
 
 
