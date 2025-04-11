@@ -54,17 +54,4 @@ python attack.py --model='RUNG' --norm='MCP' --gamma=6.0 --data='cora'
   <!-- <img src="./figures/instr-108.jpg" width="54%" />  -->
 </p>
 
-## Citation
 
-If you find our work helpful, please consider citing it as
-```
-@misc{hou2024robustgraphneuralnetworks,
-      title={Robust Graph Neural Networks via Unbiased Aggregation}, 
-      author={Zhichao Hou and Ruiqi Feng and Tyler Derr and Xiaorui Liu},
-      year={2024},
-      eprint={2311.14934},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2311.14934}, 
-}
-```
