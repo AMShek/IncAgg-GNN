@@ -10,9 +10,7 @@ from torch_sparse import SparseTensor
 from torch_geometric_autoscale.models import ScalableGNN
 from torch_geometric_autoscale import SubgraphLoader
 
-# ambershhek for logging
 import logging
-# A logger for this file
 log = logging.getLogger(__name__)
 
 import ipdb
@@ -25,17 +23,11 @@ class APPNP(ScalableGNN):
                  buffer_size: Optional[int] = None, device=None):
         super().__init__(num_nodes, out_channels, num_layers, pool_size,
                          buffer_size, device, in_channels=in_channels)
-        # ipdb.set_trace() # check channels
-        # super().__init__(num_nodes, hidden_channels, num_layers, pool_size,
-        #                  buffer_size, device, in_channels=in_channels)
 
-        # ipdb.set_trace() # check channels
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.alpha = alpha
         self.dropout = dropout
-
-        # ipdb.set_trace() # check channels
 
         self.lins = ModuleList()
         self.lins.append(Linear(in_channels, hidden_channels))
@@ -52,23 +44,14 @@ class APPNP(ScalableGNN):
     def forward(self, x: Tensor, adj_t: SparseTensor, drift_norm: int, aggregate_combined: bool = True, use_aggregation=True, *args) -> Tensor:
         time_push_and_pull_all = 0 
 
-        # ipdb.set_trace()
-        # if args[1].shape[0] == x.shape[0]:
         n_id = args[1]
         n_id = n_id.to(x.device)
         batch_size = args[0]
 
         if use_aggregation:
-            # # masks for IB and OB
             in_batch_mask = (adj_t.storage.row() < batch_size) & (adj_t.storage.col() < batch_size)
             out_batch_mask = ~in_batch_mask
-            # Combine in_batch_mask and out_batch_mask directly
             combined_mask = in_batch_mask | out_batch_mask
-
-            # Count in-batch and out-of-batch neighbors
-            num_in_batch_neighbors = in_batch_mask.sum().item()
-            num_out_batch_neighbors = out_batch_mask.sum().item()
-            # log.info(f'Number of in-batch neighbors: {num_in_batch_neighbors}, Number of out-of-batch neighbors: {num_out_batch_neighbors}')
 
             in_batch_adj = SparseTensor(
                 row=adj_t.storage.row()[in_batch_mask],
@@ -88,11 +71,8 @@ class APPNP(ScalableGNN):
 
             if aggregate_combined:
                 adj_t = combined_adj
-                # log.info(f'Use ib & ob neighbors!')
             else:
-                # ipdb.set_trace()
                 adj_t = in_batch_adj
-                # log.info(f'Discard out-of-batch neighbors!')
 
             x = F.dropout(x, p=self.dropout, training=self.training)
             x = self.lins[0](x)
@@ -103,18 +83,12 @@ class APPNP(ScalableGNN):
 
             for history in self.histories:
                 x = (1 - self.alpha) * (adj_t @ x) + self.alpha * x_0
-                # x = self.push_and_pull(history, x, *args) # original push_and_pull
-                # import ipdb
-                # ipdb.set_trace()
                 x, time_push_and_pull = self.push_and_pull(history, x, batch_size=args[0], n_id=args[1].to(history.emb.device), offset=args[2], count=args[3])
                 time_push_and_pull_all += time_push_and_pull
 
             x = (1 - self.alpha) * (adj_t @ x) + self.alpha * x_0
         else:
-            log.info(f'Not using aggregation... GCNConv degraded to MLP!')
-            # only keep current batch
             x = x[:batch_size]
-
             x = F.dropout(x, p=self.dropout, training=self.training)
             x = self.lins[0](x)
             x = x.relu()
@@ -123,10 +97,7 @@ class APPNP(ScalableGNN):
             x_0 = x[:adj_t.size(0)]
 
             for history in self.histories:
-                # ipdb.set_trace()
                 x = (1 - self.alpha) * x + self.alpha * x_0
-                # x = self.push_and_pull(history, x, *args) # original push_and_pull
-                # use only the in-batch n_id parts
                 x, time_push_and_pull = self.push_and_pull(history, x, batch_size=args[0], n_id=args[1].to(history.emb.device)[:batch_size], offset=args[2], count=args[3])
                 time_push_and_pull_all += time_push_and_pull
 
@@ -136,72 +107,7 @@ class APPNP(ScalableGNN):
 
     def VR_forward(self, x: Tensor, adj_t: SparseTensor, drift_norm: int, epoch: int, batch_idx: int, *args) -> Tensor:
         batch_size = args[0]
-
-        # only keep current batch
         x = x[:batch_size]
-
-        """ 不需要处理adj_t，因为adj_t已经只包含in-batch neighbors
-        # Modified part: Aggregate only in-batch neighbors
-        in_batch_mask = (adj_t.storage.row() < batch_size) & (adj_t.storage.col() < batch_size)
-        out_batch_mask = ~in_batch_mask
-
-        # Count in-batch and out-of-batch neighbors
-        num_in_batch_neighbors = in_batch_mask.sum().item()
-        num_out_batch_neighbors = out_batch_mask.sum().item()
-        log.info(f'Number of in-batch neighbors: {num_in_batch_neighbors}, Number of out-of-batch neighbors: {num_out_batch_neighbors}')
-        
-        in_batch_adj = SparseTensor(
-            row=adj_t.storage.row()[in_batch_mask],
-            col=adj_t.storage.col()[in_batch_mask],
-            value=adj_t.storage.value()[in_batch_mask] if adj_t.storage.value() is not None else None,
-            # sparse_sizes=(adj_t.size(0), adj_t.size(1)),
-            sparse_sizes=(adj_t.size(0), adj_t.size(0)) # only keep in-batch neighbors
-        )
-        """
-
-        """
-        in_batch_adj_rectangle = SparseTensor(
-            row=adj_t.storage.row()[in_batch_mask],
-            col=adj_t.storage.col()[in_batch_mask],
-            value=adj_t.storage.value()[in_batch_mask] if adj_t.storage.value() is not None else None,
-            sparse_sizes=(adj_t.size(0), adj_t.size(1)),
-        )
-
-        x_ib_ob = x
-        x_ib = x[:batch_size]
-        """
-
-        # out_batch_adj = SparseTensor(
-        #     row=adj_t.storage.row()[out_batch_mask],
-        #     col=adj_t.storage.col()[out_batch_mask],
-        #     value=adj_t.storage.value()[out_batch_mask] if adj_t.storage.value() is not None else None,
-        #     sparse_sizes=adj_t.sparse_sizes()
-        # )
-
-        # Combine in_batch_mask and out_batch_mask directly
-        # combined_mask = in_batch_mask | out_batch_mask
-
-        # # Create the combined adjacency using the combined mask
-        # combined_adj = SparseTensor(
-        #     row=adj_t.storage.row()[combined_mask],
-        #     col=adj_t.storage.col()[combined_mask],
-        #     value=adj_t.storage.value()[combined_mask] if adj_t.storage.value() is not None else None,
-        #     sparse_sizes=adj_t.sparse_sizes(),
-        #     is_sorted=True,  # Use True to prevent re-ordering in SparseTensor constructor
-        #     trust_data=True
-        # )
-
-        # ipdb.set_trace()
-        # adj_t = in_batch_adj
-        # log.info(f'Discard out-of-batch neighbors!')
-        # adj_t = combined_adj
-        # log.info(f'Use ib & ob neighbors!')
-
-        time_data_movement = 0 
-
-        # original APPNP forward
-        # ipdb.set_trace()
-        # tmp = x.clone().detach( )
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.lins[0](x)
         x = x.relu()
@@ -209,38 +115,16 @@ class APPNP(ScalableGNN):
         x = self.lins[1](x)
         x_0 = x[:adj_t.size(0)]
 
-        # for history in self.histories:
         for i in range(self.num_layers-1):
-            # x = (1 - self.alpha) * (adj_t @ x) + self.alpha * x_0 # original APPNP forward
-            # APPNP-VR forward
-            # period_hist_selected = self.period_hist[i].index_select(0, n_id)
-            # period_hist_selected = self.period_hist[-1].index_select(0, n_id[:batch_size])
-            # period_hist_aggr_selected = self.period_hist_aggr[i].to(x.device).index_select(0, n_id[:batch_size])
-            # ipdb.set_trace()
-
-            ### new implementation, get M_in and M_ag from CPU using asynchronic pools
             period_hist_selected_new = self.pool.synchronize_pull()[:batch_size, :x.shape[1]].clone().detach()
             period_hist_aggr_selected_new = self.pool_ag.synchronize_pull()[:batch_size, :x.shape[1]].clone().detach()            
 
             x_vr = adj_t@(x-period_hist_selected_new) + period_hist_aggr_selected_new
             x = (1 - self.alpha) * x_vr + self.alpha * x_0
 
-            # x, time_push_and_pull = self.push_and_pull(history, x, batch_size=args[1], n_id=args[2].to(history.emb.device), offset=args[3], count=args[4])
-            # x, time_push = self.push_only(history, x, batch_size=args[1], n_id=args[2].to(history.emb.device), offset=args[3], count=args[4])
-            
-            ## free the buffer space for current batch and layer of M_in and M_ag
             self.pool.free_pull()
             self.pool_ag.free_pull()
 
-            time_data_movement += 0
-
-        # x = (1 - self.alpha) * (adj_t @ x) + self.alpha * x_0 # original APPNP forward
-        # APPNP-VR forward
-        # period_hist_selected = self.period_hist[-1].index_select(0, n_id)
-        # period_hist_selected = self.period_hist[-1].index_select(0, n_id[:batch_size])
-        # period_hist_aggr_selected = self.period_hist_aggr[-1].to(x.device).index_select(0, n_id[:batch_size])
-
-        # new implementation, get M_in and M_ag from CPU using asynchronic pools
         period_hist_selected_new = self.pool.synchronize_pull()[:batch_size, :x.shape[1]].clone().detach()
         period_hist_aggr_selected_new = self.pool_ag.synchronize_pull()[:batch_size, :x.shape[1]].clone().detach()
         x_vr = adj_t@(x-period_hist_selected_new) + period_hist_aggr_selected_new
@@ -250,12 +134,12 @@ class APPNP(ScalableGNN):
         self.pool.free_pull()
         self.pool_ag.free_pull()
         
-        return x, time_data_movement, 0, 0
+        return x, 0, 0, 0
 
 
     @torch.no_grad()
     def forward_layer(self, layer, x, adj_t, state, use_aggregation=True):
-        if use_aggregation: #APPNP
+        if use_aggregation: 
             if layer == 0:
                 x = F.dropout(x, p=self.dropout, training=self.training)
                 # ipdb.set_trace()
@@ -265,12 +149,9 @@ class APPNP(ScalableGNN):
                 x = x_0 = self.lins[1](x)
                 state['x_0'] = x_0[:adj_t.size(0)]
 
-            # ipdb.set_trace()
             x = (1 - self.alpha) * (adj_t @ x) + self.alpha * state['x_0']
             return x
-        else: # do NOT use aggregation, degrade to MLP
-            # log.info(f'[forward_layer] Not using aggregation... GCNConv degraded to MLP!')
-            # only keep current batch
+        else: 
             x = x[:adj_t.size(0)]
 
             if layer == 0:
@@ -312,11 +193,9 @@ class APPNP(ScalableGNN):
             hist = history.pull().to(hist_device).clone().detach()
             aggr_hist = A @ hist
             aggr_hist = aggr_hist.clone().detach()
-            # ipdb.set_trace()
 
             self.period_hist.append(hist)
             self.period_hist_aggr.append(aggr_hist)
-        # ipdb.set_trace()
 
 
     @torch.no_grad()

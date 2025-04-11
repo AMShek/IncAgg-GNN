@@ -77,21 +77,11 @@ class AsyncIOPool(torch.nn.Module):
     def _async_pull(self, idx: int, src: Tensor, offset: Optional[Tensor],
                     count: Optional[Tensor], index: Tensor) -> None:
         with torch.cuda.stream(self._pull_stream(idx)):
-            # start_time = time.perf_counter()
-
-            # ipdb.set_trace()
             read_async(src, offset, count, index, self._cuda_buffer(idx),
                        self._cpu_buffer(idx))
-            
-            # end_time = time.perf_counter()
-            # elapsed_time = end_time - start_time
-            # print(f"calling read_async took {elapsed_time:.6f} seconds")
 
     @torch.no_grad()
     def synchronize_pull(self) -> Tensor:
-        # Synchronize the next pull command:
-        # torch.cuda._sleep(int(1e8))  # Sleep for 0.1 second. minic slow pull
-
         idx = self._pull_queue[0][0]
         synchronize()
         torch.cuda.synchronize(self._pull_stream(idx))
@@ -128,16 +118,7 @@ class AsyncIOPool(torch.nn.Module):
                 self.synchronize_push(idx)
             self._push_index = -1
 
-        else:
-            # if idx < 0 or idx >= self.pool_size:
-            #     raise ValueError(f"Index {idx} is out of bounds for pool size {self.pool_size}")
-                        
-            # if self._push_cache[idx] is None:
-            #     raise RuntimeError(f"Push cache {idx} is not initialized")
-            
-            # if self._push_streams[idx] is None:
-            #     raise RuntimeError(f"Push stream {idx} is not initialized")
-            
+        else:           
             torch.cuda.synchronize(self._push_stream(idx))
             self._push_cache[idx] = None
 
