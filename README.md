@@ -3,7 +3,7 @@
 This repository provides the code, data, and results for the paper: *ReverbGNN: Scaling Graph Training with Periodical Local and Global Memory*
 
 <p float="left">
-  <img src="./figures/rung_page.png" width="100%" />
+  <img src="./figures/overview.png" width="100%" />
   <!-- <img src="./figures/instr-108.jpg" width="54%" />  -->
 </p>
 
