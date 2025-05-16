@@ -1,6 +1,6 @@
-# ReverbGNN
+# IncAgg-GNN
 
-This repository provides the codes and results for the paper: *ReverbGNN: Scaling Graph Training with Periodical Local and Global Memory*
+This repository provides the codes and results for the paper: *Training Graph Neural Networks at Scale \\ through Incremental Aggregation*
 
 <p float="left">
   <img src="./figures/incagg-overview.png" width="100%" />
@@ -31,7 +31,7 @@ This code repository was adapted from an open-source library, [PyGAS](https://gi
 ## Reproducing Results
 
 ### Train the model
-Here’s a general command template to train a model with ReverbGNN:
+Here’s a general command template to train a model with IncAgg-GNN:
 ```bash
 python main.py \
     ++model=pna \
