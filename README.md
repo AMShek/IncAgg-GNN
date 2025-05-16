@@ -1,6 +1,6 @@
 # IncAgg-GNN
 
-This repository provides the codes and results for the paper: *Training Graph Neural Networks at Scale \\ through Incremental Aggregation*
+This repository provides the codes and results for the paper: *Training Graph Neural Networks at Scale through Incremental Aggregation*
 
 <p float="left">
   <img src="./figures/incagg-overview.png" width="100%" />
